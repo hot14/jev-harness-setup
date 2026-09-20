@@ -76,14 +76,14 @@ canvas{max-width:100%}
   <h1>설치된 하네스별 <em>Jev 워크플로우</em><br>최적 셋업과 Orca 원격 배포 전략</h1>
   <p class="sub">이 컴퓨터에 실제 설치된 에이전트 하네스를 전수 조사하고, 각 하네스에 TypeSafe Jev를 붙이는 최적 경로와, 완성된 워크플로우를 다른 컴퓨터의 Orca로 안전하게 배포하는 검증 프레임워크까지 한 번에 정리했다.</p>
   <div class="kpis">
-    <div class="kpi a"><b>12종</b><span>Orca 등록 하네스 (실측)</span></div>
+    <div class="kpi a"><b>15+</b><span>하네스 (Orca 12 + 신규 3)</span></div>
     <div class="kpi b"><b>332개</b><span>지식창고 프로젝트 지식 기반</span></div>
     <div class="kpi c"><b>3가지</b><span>원격 배포 채널 비교</span></div>
     <div class="kpi d"><b>L1~L4</b><span>실행 전 검증 게이트</span></div>
   </div>
 </div></div>
 <nav><div class="in">
-  <a href="#s1">하네스 지도</a><a href="#s2">핵심 발견</a><a href="#s3">통합 경로</a><a href="#s4">pi-jev</a><a href="#s5">공통 원칙</a><a href="#s6">원격 배포</a><a href="#s7">검증 프레임</a><a href="#s8">롤아웃</a><a href="#s9">과제</a>
+  <a href="#s1">하네스 지도</a><a href="#s2">핵심 발견</a><a href="#s3">통합 경로</a><a href="#s4">pi-jev</a><a href="#s5">공통 원칙</a><a href="#s6">원격 배포</a><a href="#s7">검증 프레임</a><a href="#s8">롤아웃</a><a href="#s9">과제</a><a href="#s10">신규 하네스</a><a href="#s11">지식창고</a><a href="#s12">저장소 설계</a><a href="#s13">플레이북</a>
 </div></nav>
 <div class="wrap">
 <!-- PART2 -->
@@ -217,9 +217,87 @@ pi        # 실행 중이면 /reload 후 /jev</code></pre>
 <p style="font-size:14px">지식창고 332개 프로젝트 → 하네스 통합 연구(본 문서) → Jev 노트북 소스 재적재 → 노트북 내 브리핑 리포트 증류 → 실행하며 수집된 캘리브레이션 데이터를 다시 노트북에 적재 → 다음 버전 v1.1 연구. 연구-실행-증류가 한 루프로 돈다.</p></div>
 </section>
 
-<div class="foot"><div class="wrap">
+<section id="s10"><div class="secnum">SECTION 10</div><h2>추가 실측: OMP · DSH(dsh-web) · prime-agent</h2>
+<p class="lead">피드백 반영. 세 에이전트 모두 실측으로 확인했고, prime-agent는 공식 저장소 조사로 정체를 확정했다.</p>
+<div class="grid3">
+<div class="card"><h4 style="margin-top:0">OMP <span class="tag t1">설치 완료</span></h4>
+<p style="font-size:13.5px"><b>oh-my-pi</b> — pi 확장 관리 시스템. <code>~/.omp</code>에 agent DB·oauth·puppeteer 구성, <code>@oh-my-pi</code> 전 모듈 설치. 지식창고 #64 oh-my-pi(can1357) 등록. Jev 결합: pi-jev / pi-typesafe / pi-jev-router / fast-jev-compaction 확장을 OMP에 등록해 압축·라우팅·게이트를 분리 운영.</p></div>
+<div class="card"><h4 style="margin-top:0">DSH · dsh-web <span class="tag t1">설치·사용중</span></h4>
+<p style="font-size:13.5px"><b>DeepSeek Harness</b> (deepseek-ai 공식, Cordis 올플러그인). <code>~/.dsh</code> 실사용 설정(z.ai GLM-5.3 기본), <code>~/dsh-stars</code>에 생태계 약 90 리포 클론(웹UI·플러그인 마켓·워크플로·에이전트팀). <code>npx @deepseek-ai/dsh web</code>으로 웹UI 3080 기동. Jev 결합: Cordis 플러그인 게이트 + dsh_workflow 커맨드 체인. 주의: 개발자 프리뷰라 버전 고정 필수.</p></div>
+<div class="card"><h4 style="margin-top:0">prime-agent <span class="tag t2">공식 조사 완료</span></h4>
+<p style="font-size:13.5px"><b>PrimeIntellect-ai/prime-agent</b> (21,095 스타, MIT). pi 기반 자기개선형 RLM 하네스: persistent Python REPL, <code>rlm.spawn()</code> 서브에이전트, Continual Harness(/refine). 스킬 위치 <code>~/.prime/agent/skills/</code>, <b>claude/codex 스킬 디렉터리 구독 가능</b>. Jev 결합: jev-workflows/skills 구독 + REPL에서 jev_decide() 함수 직접 호출.</p></div>
+</div></section>
+
+<section id="s11"><div class="secnum">SECTION 11</div><h2>지식창고: NotebookLM 지식 기반의 구조</h2>
+<p class="lead">모든 연구의 지식원. awesome-jev-projects 332개 프로젝트를 하네스 셋업에 필요한 형태로 전부 정리한 지식 기반이며, Jev 노트북에 18개 소스로 적재되어 있다.</p>
+<div class="grid2">
+<div class="card"><h4 style="margin-top:0">분할 구조 (18 소스)</h4>
+<table><tr><th>파일</th><th>카테고리</th><th>프로젝트</th></tr>
+<tr><td>00-색인</td><td>전체 색인</td><td>—</td></tr>
+<tr><td>01 browser-os-action</td><td>브라우저·OS 조작</td><td>26</td></tr>
+<tr><td>02 mcp-integrations</td><td>MCP·통합</td><td>18</td></tr>
+<tr><td>03 cli-pipelines</td><td>CLI·파이프라인</td><td>18</td></tr>
+<tr><td>04 routing-cost</td><td>라우팅·비용</td><td>26</td></tr>
+<tr><td>05 context-gc-filter</td><td>컨텍스트 GC</td><td>20</td></tr>
+<tr><td>06 codebase-graph</td><td>코드베이스 그래프</td><td>11</td></tr>
+<tr><td>07 domain-vertical</td><td>도메인 특화</td><td>22</td></tr>
+<tr><td>08 hf-simulation</td><td>고빈도·시뮬레이션</td><td>28</td></tr>
+<tr><td>09 security-guardrails</td><td>보안 가드레일</td><td>23</td></tr>
+<tr><td>10 evaluation</td><td>평가·관측</td><td>29</td></tr>
+<tr><td>11 data-search</td><td>데이터·검색</td><td>17</td></tr>
+<tr><td>12 sdk-decision</td><td>SDK·의사결정 프레임워크</td><td>59</td></tr>
+<tr><td>13 voice / 14 classification / 15 creative / 16 sdk-integrations / 17 decision-tools</td><td>기타 5개</td><td>35</td></tr></table></div>
+<div class="card"><h4 style="margin-top:0">프로젝트 1개당 수록 내용</h4>
+<table>
+<tr><td><b>메타데이터</b></td><td>카테고리, 중요도 순위, GitHub·레이더 주소, 스타·포크·이슈, 언어, 라이선스, 커밋일, 태그</td></tr>
+<tr><td><b>요약</b></td><td>한국어 + 영어 (human-reviewed 검수판)</td></tr>
+<tr><td><b>Jev 의사결정 지점</b></td><td>한국어 + 영어 — 하네스 설계의 핵심</td></tr>
+<tr><td><b>핵심 이 benefit·검증 상태</b></td><td>운영자 검토 결과와 성능 주장의 검증 범위</td></tr>
+<tr><td><b>소스 증거</b></td><td>커밋 고정 소스 링크 (코드 기준점)</td></tr>
+<tr><td><b>README 전문</b></td><td>원문 그대로 (332/332 수집, 누락 0)</td></tr></table>
+<p style="font-size:13px;margin-top:10px"><b>NotebookLM 투입 규칙</b>: 소스당 50만 단어 한도. 마스터판(약 69만 단어)은 단일 소스 불가, 분할판(최대 133K 단어)은 전부 안전. 마스터판은 로컬 검색·백업용. README 갱신 시 "지식창고 갱신해줘"로 동일 구조 재생산.</p></div>
+</div></section>
+
+<section id="s12"><div class="secnum">SECTION 12</div><h2>jev-workflows: 실행 가능한 배포 저장소 (v0.1 구축 완료)</h2>
+<p class="lead">설계에 그치지 않고 실제 머신에 스캐폴딩했고, 게이트 스크립트는 스모크 6/6을 통과했다. 이 저장소가 원격 배포의 단위다.</p>
+<div class="grid2">
+<div class="card"><h4 style="margin-top:0">디렉터리 구조</h4>
+<pre style="font-size:11.5px"><code>~/jev-workflows/
+├── scripts/
+│   ├── jev-gate.sh    # 결정 게이트 (3단 판정)
+│   ├── jev-doctor.sh  # L1 프리플이트
+│   └── jev-smoke.sh   # L3 시나리오 6종
+├── hooks/orca-user-pretooluse.sh
+├── skills/{gate,doctor,smoke,compaction}/SKILL.md
+├── configs/{claude,codex,gemini,opencode,pi,dsh,prime,openclaw}/
+├── manifests/machines.json   # 머신별 오버라이드
+└── docs/ARCHITECTURE.md</code></pre></div>
+<div class="card"><h4 style="margin-top:0">jev-gate 3단 판정 (검증 결과 포함)</h4>
+<table>
+<tr><td><b>1. 결정론 규칙</b></td><td>rm -rf ~, mkfs 등 → deny / curl|sh, 강제푸시 → ask / 읽기전용 → allow (Fail-Closed)</td></tr>
+<tr><td><b>2. Jev API 보조</b></td><td>Choice 확률 &ge;0.9 allow, &le;0.5 deny, 중간 ask (3초 타임아웃, 실패 시 폴백)</td></tr>
+<tr><td><b>3. 기본</b></td><td>미적중 허용 (기존 하네스 동작 보존)</td></tr></table>
+<p style="font-size:13px">모든 판단은 <code>~/.jev-workflows/log/decisions.jsonl</code>에 기록 → 캘리브레이션 원료. 현재 스모크 <b>6/6 통과</b>, doctor 결과 <b>PASS 8 / FAIL 2</b>(디스크 여유, API 키 — 실제 해결 과제).</p></div>
+</div></section>
+
+<section id="s13"><div class="secnum">SECTION 13</div><h2>하네스별 최강 워크플로우 플레이북 (Jev 기반)</h2>
+<p class="lead">공통 스택(jev-workflows + Jev 노트북 + decisions 캘리브레이션 루프) 위에서 하네스별로 하나씩만 잘하는 조합.</p>
+<table>
+<tr><th>하네스</th><th>최강 조합</th><th>하나만 잘하기</th></tr>
+<tr><td><b>Claude Code+OMC</b></td><td>jev-mcp + PreToolUse 훅</td><td>서브에이전트 실행 전에도 가드레일 동작</td></tr>
+<tr><td><b>Codex</b></td><td>config.toml MCP + 출력 선별 압축</td><td>긴 빌드 로그에서 에러만 보존</td></tr>
+<tr><td><b>Gemini+Antigravity</b></td><td>settings.json MCP + jev_choose_next_tool</td><td>브라우저 작업 전 위험 선별</td></tr>
+<tr><td><b>OpenCode</b></td><td>opencode.json MCP + jev-eval-mcp</td><td>가벼운 상시 가드레일</td></tr>
+<tr><td><b>pi + OMP</b></td><td>pi-jev 전면 + gate 경로</td><td>압축·라우팅·게이트를 패키지 하나로</td></tr>
+<tr><td><b>OpenClaw</b></td><td>QMD 전후 jev_screen + cron 게이트</td><td>24/7 수집 파이프라인 오염 차단·비용 절감</td></tr>
+<tr><td><b>DSH + dsh-web</b></td><td>Cordis 플러그인 게이트 + 웹UI 관제</td><td>판단 모니터링(usage-stats·cost-meter 조합)</td></tr>
+<tr><td><b>prime-agent</b></td><td>스킬 구독 + REPL jev_decide()</td><td>장기 자율 작업, /refine이 임계값 조정 이력 축적</td></tr>
+<tr><td><b>claude-flow</b></td><td>SDK 라우팅 미들웨어</td><td>분기 비용 대폭 절감</td></tr>
+<tr><td><b>Aside</b></td><td>NotebookLM MCP 순환</td><td>연구-실행-증류 루프 운영자</td></tr></table></section>
+
+<div class="foot"><div class="foot"><div class="wrap">
 <p><b>출처 계층</b>: 하네스·포트·훅 구조 = 로컬 실측(2026-09-21) | Orca 동작 = 공식 문서(docs/reference: skill sharing, orcad operations) | 패키지명·수치 = Jev 노트북 지식창고 소스 기록(커밋 고정 링크로 2차 검증 권장)</p>
-<p>아카이브: ~/.aside/u/0/reports/2026-09-21_jev-하네스-셋업-연구/ | 연구문서 01·02 + 본 리포트 | Jev 노트북 소스: JEV하네스연구 01·02</p>
+<p>아카이브: ~/.aside/u/0/reports/2026-09-21_jev-하네스-셋업-연구/ | 연구문서 01~04 + 본 리포트 + ~/jev-workflows 저장소 | Jev 노트북 소스: JEV하네스연구 01·02</p>
 <div class="gate">윤문 게이트: 경로 light, em-dash 0, 법령 검증 해당없음, KB 수치 원문 보존</div>
 </div></div>
 <script>
