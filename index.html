@@ -277,7 +277,7 @@ pi        # 실행 중이면 /reload 후 /jev</code></pre>
 <tr><td><b>1. 결정론 규칙</b></td><td>rm -rf ~, mkfs 등 → deny / curl|sh, 강제푸시 → ask / 읽기전용 → allow (Fail-Closed)</td></tr>
 <tr><td><b>2. Jev API 보조</b></td><td>Choice 확률 &ge;0.9 allow, &le;0.5 deny, 중간 ask (3초 타임아웃, 실패 시 폴백)</td></tr>
 <tr><td><b>3. 기본</b></td><td>미적중 허용 (기존 하네스 동작 보존)</td></tr></table>
-<p style="font-size:13px">모든 판단은 <code>~/.jev-workflows/log/decisions.jsonl</code>에 기록 → 캘리브레이션 원료. 현재 스모크 <b>6/6 통과</b>, doctor 결과 <b>PASS 8 / FAIL 2</b>(디스크 여유, API 키 — 실제 해결 과제).</p></div>
+<p style="font-size:13px">모든 판단은 <code>~/.jev-workflows/log/decisions.jsonl</code>에 기록 → 캘리브레이션 원료. 현재 스모크 <b>6/6 통과</b>, doctor <b>PASS 10 / FAIL 0</b>(2026-09-21: 전 하네스 업데이트 + TypeSafe API 키 셋업 완료 후). 캐넌리: Claude Code 섀도우 모드 가동 중.</p></div>
 </div></section>
 
 <section id="s13"><div class="secnum">SECTION 13</div><h2>하네스별 최강 워크플로우 플레이북 (Jev 기반)</h2>
