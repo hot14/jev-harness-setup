@@ -83,7 +83,7 @@ canvas{max-width:100%}
   </div>
 </div></div>
 <nav><div class="in">
-  <a href="#s1">하네스 지도</a><a href="#s2">핵심 발견</a><a href="#s3">통합 경로</a><a href="#s4">pi-jev</a><a href="#s5">공통 원칙</a><a href="#s6">원격 배포</a><a href="#s7">검증 프레임</a><a href="#s8">롤아웃</a><a href="#s9">과제</a><a href="#s10">신규 하네스</a><a href="#s11">지식창고</a><a href="#s12">저장소 설계</a><a href="#s13">플레이북</a>
+  <a href="#s1">하네스 지도</a><a href="#s2">핵심 발견</a><a href="#s3">통합 경로</a><a href="#s4">pi-jev</a><a href="#s5">공통 원칙</a><a href="#s6">원격 배포</a><a href="#s7">검증 프레임</a><a href="#s8">롤아웃</a><a href="#s9">과제</a><a href="#s10">신규 하네스</a><a href="#s11">지식창고</a><a href="#s12">저장소 설계</a><a href="#s13">플레이북</a><a href="#s14">운영 대시보드</a>
 </div></nav>
 <div class="wrap">
 <!-- PART2 -->
@@ -295,7 +295,27 @@ pi        # 실행 중이면 /reload 후 /jev</code></pre>
 <tr><td><b>claude-flow</b></td><td>SDK 라우팅 미들웨어</td><td>분기 비용 대폭 절감</td></tr>
 <tr><td><b>Aside</b></td><td>NotebookLM MCP 순환</td><td>연구-실행-증류 루프 운영자</td></tr></table></section>
 
-<div class="foot"><div class="foot"><div class="wrap">
+<section id="s14"><div class="secnum">SECTION 14</div><h2>운영 대시보드 (실시간 상태)</h2>
+<p class="lead">2026-09-21 종료 기준. 시스템 업데이트와 감사 보완까지 완료한 현재 상태다.</p>
+<div class="kpis">
+<div class="kpi a"><b>10/0</b><span>doctor PASS/FAIL</span></div>
+<div class="kpi b"><b>6/6</b><span>스모크 시나리오</span></div>
+<div class="kpi c"><b>38+</b><span>누적 판단 기록</span></div>
+<div class="kpi d"><b>shadow</b><span>Claude Code 캐넌리 모드</span></div>
+</div>
+<div class="card"><h4 style="margin-top:0">감사 보완 완료 항목 (v0.5)</h4>
+<table>
+<tr><td><b>shadow 우회 버그 수정</b></td><td>env 소싱 순서 문제로 결정론 규칙이 shadow를 우회하던 것 해결</td></tr>
+<tr><td><b>민감 파일 툴 판정</b></td><td>Edit/Write의 .ssh·.env·id_rsa 경로 쓰기 → ask 규칙 추가</td></tr>
+<tr><td><b>jev-review</b></td><td>판정 분포·오탐 샘플 한 번에 요약 (캘리브레이션 판단 근거)</td></tr>
+<tr><td><b>jev-uninstall</b></td><td>훅 제거·env 원복 등 전체 롤백 1커맨드</td></tr>
+<tr><td><b>Orca 훅 설계 정정</b></td><td>내부 엔드포인트 구조상 직접 주입 비권장 확정, 하네스별 네이티브 훅이 정석</td></tr>
+<tr><td><b>시스템 업데이트</b></td><td>claude 2.1.267 / codex 0.155.1 / gemini 0.46.0 / openclaw 2026.9.5 / pi 18.2.6</td></tr></table></div>
+<div class="card hl"><h4 style="margin-top:0">다음 의사결정 지점</h4>
+<p style="font-size:14px"><b>3~7일 후</b>: "캘리브레이션 리뷰해줘" → jev-review로 오탐 분석 → 임계값 확정 → <code>JEV_SHADOW=1</code> 라인 삭제로 실차단 개시 (Stage 0 완료) → Orca 스킬 번들 v1을 원격 머신에 배포 (Stage 1).</p></div>
+</section>
+
+<div class="foot"><div class="foot"><div class="foot"><div class="wrap">
 <p><b>출처 계층</b>: 하네스·포트·훅 구조 = 로컬 실측(2026-09-21) | Orca 동작 = 공식 문서(docs/reference: skill sharing, orcad operations) | 패키지명·수치 = Jev 노트북 지식창고 소스 기록(커밋 고정 링크로 2차 검증 권장)</p>
 <p>아카이브: ~/.aside/u/0/reports/2026-09-21_jev-하네스-셋업-연구/ | 연구문서 01~04 + 본 리포트 + ~/jev-workflows 저장소 | Jev 노트북 소스: JEV하네스연구 01·02</p>
 <div class="gate">윤문 게이트: 경로 light, em-dash 0, 법령 검증 해당없음, KB 수치 원문 보존</div>
