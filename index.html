@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jev 하네스 셋업 연구: 설치 하네스별 최적 워크플로우와 Orca 원격 배포</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0d1117; --bg2:#131a24; --card:#18202c; --card2:#1d2735;
+  --line:#2a3646; --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+  --acc:#5eead4; --acc2:#818cf8; --warn:#fbbf24; --bad:#f87171; --ok:#4ade80;
+  --mono:'SF Mono',ui-monospace,Menlo,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;line-height:1.75;font-size:16px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+a{color:var(--acc);text-decoration:none}
+h2{font-size:26px;font-weight:800;margin:0 0 6px;letter-spacing:-.02em}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px;color:var(--acc)}
+h4{font-size:16px;font-weight:700;margin:16px 0 8px}
+p{color:var(--tx2);margin:8px 0}
+strong{color:var(--tx)}
+/* hero */
+.hero{padding:72px 0 44px;border-bottom:1px solid var(--line);background:radial-gradient(1200px 400px at 70% -10%,rgba(94,234,212,.09),transparent),radial-gradient(900px 380px at 20% -20%,rgba(129,140,248,.10),transparent)}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.14em;color:var(--acc);border:1px solid rgba(94,234,212,.35);border-radius:999px;padding:5px 14px;margin-bottom:18px;background:rgba(94,234,212,.06)}
+.hero h1{font-size:clamp(30px,5vw,46px);font-weight:900;letter-spacing:-.03em;line-height:1.22;margin-bottom:14px}
+.hero h1 em{font-style:normal;color:var(--acc)}
+.hero .sub{font-size:17px;color:var(--tx2);max-width:760px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:34px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kpi b{display:block;font-size:26px;font-weight:800;letter-spacing:-.02em}
+.kpi span{font-size:12.5px;color:var(--tx3);font-weight:600}
+.kpi.a b{color:var(--acc)} .kpi.b b{color:var(--acc2)} .kpi.c b{color:var(--warn)} .kpi.d b{color:var(--ok)}
+/* nav */
+nav{position:sticky;top:0;z-index:50;background:rgba(13,17,23,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav .in{max-width:1080px;margin:0 auto;padding:10px 24px;display:flex;gap:4px;overflow-x:auto}
+nav a{flex:0 0 auto;font-size:13px;font-weight:600;color:var(--tx2);padding:7px 12px;border-radius:8px}
+nav a:hover{color:var(--tx);background:var(--card)}
+/* sections */
+section{padding:56px 0 20px;border-bottom:1px solid var(--line)}
+.secnum{font-size:12px;font-weight:800;letter-spacing:.16em;color:var(--acc2);margin-bottom:6px}
+.lead{font-size:15.5px;color:var(--tx2);max-width:820px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:14px 0}
+.card.hl{border-color:rgba(94,234,212,.4);background:linear-gradient(180deg,rgba(94,234,212,.05),var(--card))}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:800px){.grid2,.grid3{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0}
+th{color:var(--tx3);font-weight:700;text-align:left;padding:9px 12px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);color:var(--tx2);vertical-align:top}
+td b{color:var(--tx)}
+code{font-family:var(--mono);font-size:13px;background:#0a0e14;border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--acc)}
+pre{background:#0a0e14;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;margin:12px 0}
+pre code{background:none;border:none;padding:0;font-size:12.8px;line-height:1.7;color:#c9d6e4}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:6px;padding:2px 9px;margin-right:6px;vertical-align:1px}
+.tag.t1{background:rgba(94,234,212,.12);color:var(--acc)}
+.tag.t2{background:rgba(129,140,248,.14);color:var(--acc2)}
+.tag.t3{background:rgba(251,191,36,.13);color:var(--warn)}
+.callout{border-left:3px solid var(--acc);background:rgba(94,234,212,.06);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:14.5px;color:var(--tx2)}
+.callout b{color:var(--tx)}
+.callout.warn{border-color:var(--warn);background:rgba(251,191,36,.06)}
+.chip{display:inline-block;font-size:12.5px;font-weight:600;background:var(--card2);border:1px solid var(--line);color:var(--tx2);border-radius:999px;padding:4px 12px;margin:3px 3px 0 0}
+.chip.hot{border-color:rgba(94,234,212,.45);color:var(--acc)}
+canvas{max-width:100%}
+.chartbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0}
+.chartbox .cap{font-size:12.5px;color:var(--tx3);margin-top:10px}
+.foot{padding:40px 0 70px;color:var(--tx3);font-size:13px}
+.foot .gate{margin-top:14px;padding:10px 14px;background:var(--card);border-radius:10px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <span class="kicker">RESEARCH REPORT · 2026-09-21</span>
+  <h1>설치된 하네스별 <em>Jev 워크플로우</em><br>최적 셋업과 Orca 원격 배포 전략</h1>
+  <p class="sub">이 컴퓨터에 실제 설치된 에이전트 하네스를 전수 조사하고, 각 하네스에 TypeSafe Jev를 붙이는 최적 경로와, 완성된 워크플로우를 다른 컴퓨터의 Orca로 안전하게 배포하는 검증 프레임워크까지 한 번에 정리했다.</p>
+  <div class="kpis">
+    <div class="kpi a"><b>12종</b><span>Orca 등록 하네스 (실측)</span></div>
+    <div class="kpi b"><b>332개</b><span>지식창고 프로젝트 지식 기반</span></div>
+    <div class="kpi c"><b>3가지</b><span>원격 배포 채널 비교</span></div>
+    <div class="kpi d"><b>L1~L4</b><span>실행 전 검증 게이트</span></div>
+  </div>
+</div></div>
+<nav><div class="in">
+  <a href="#s1">하네스 지도</a><a href="#s2">핵심 발견</a><a href="#s3">통합 경로</a><a href="#s4">pi-jev</a><a href="#s5">공통 원칙</a><a href="#s6">원격 배포</a><a href="#s7">검증 프레임</a><a href="#s8">롤아웃</a><a href="#s9">과제</a>
+</div></nav>
+<div class="wrap">
+<!-- PART2 -->
+</div>
+</body>
+</html>
+<section id="s1"><div class="secnum">SECTION 01</div><h2>이 컴퓨터의 하네스 지도</h2>
+<p class="lead">2026-09-21 실측 기준. Orca의 <code>~/.orca/agent-hooks/</code>에 12개 에이전트 훅이 등록되어 있고, 그 외 독립 실행 하네스가 추가로 설치되어 있다.</p>
+<div class="card"><h4 style="margin-top:0">Orca에 등록된 하네스 (12종)</h4>
+<p style="margin-bottom:10px">모두 동일한 훅 구조를 공유한다. 툴 실행 전 <b>PreToolUse</b>, 실행 후 <b>PostToolUse</b>, 턴 종료 <b>Stop</b> 이벤트가 발생하고, 판단 기록은 <code>spool/pane-*.jsonl</code>에 자동 적재된다(5MB 상한, 7일 보존).</p>
+<span class="chip hot">claude</span><span class="chip hot">codex</span><span class="chip hot">gemini</span><span class="chip hot">antigravity</span><span class="chip">copilot</span><span class="chip">cursor</span><span class="chip">devin</span><span class="chip">droid</span><span class="chip">grok</span><span class="chip">kimi</span><span class="chip">openclaude</span><span class="chip">command-code</span></div>
+<div class="grid2">
+<div class="card"><h4 style="margin-top:0">독립 설치 하네스</h4>
+<table><tr><th>하네스</th><th>상태</th></tr>
+<tr><td><b>Claude Code</b></td><td>OMC 4.13.7 오케스트레이션 운영 중</td></tr>
+<tr><td><b>OpenClaw</b></td><td>24/7 데몬 실행 중, QMD 검색 연동</td></tr>
+<tr><td><b>Codex CLI</b></td><td>config.toml, goals DB 구성</td></tr>
+<tr><td><b>Gemini CLI</b></td><td>Antigravity 통합</td></tr>
+<tr><td><b>pi coding agent</b></td><td>17.3.3 (pi-jev 확장 존재)</td></tr>
+<tr><td><b>claude-flow</b></td><td>3.1.0-alpha 오케스트레이터</td></tr>
+<tr><td><b>OpenCode / Cursor / Continue</b></td><td>보조 IDE 계열</td></tr>
+<tr><td><b>Ollama</b></td><td>실행 중, 모델 0개 (폴백 후보)</td></tr>
+<tr><td><b>Aside</b></td><td>NotebookLM MCP 연동 완료</td></tr></table></div>
+<div class="chartbox"><h4 style="margin-top:0">지식창고 카테고리별 프로젝트 수</h4>
+<canvas id="ch1" height="230"></canvas>
+<p class="cap">Jev 노트북에 이미 적재된 지식창고 332개 프로젝트의 카테고리 분포. 하네스 통합 연구의 1차 지식원이다.</p></div>
+</div></section>
+
+<section id="s2"><div class="secnum">SECTION 02</div><h2>핵심 발견 3가지</h2>
+<p class="lead">연구를 관통하는 결정적 사실들. 이 세 가지가 전체 설계의 뼈대다.</p>
+<div class="card hl"><h4 style="margin-top:0">① Orca 훅은 이미 "결정 JSON"을 반환하는 구조다</h4>
+<p>Orca의 PreToolUse 훅은 표준 출력으로 <code>{"decision":"allow"|"ask"|"deny"}</code> 형태의 결정을 반환할 수 있다(antigravity 훅이 공식 시연). 즉 하네스마다 따로 손볼 필요 없이, <b>Orca 훅 한 곳에 Jev 게이트를 넣으면 12개 하네스 전체에 동일한 결정 레이어가 깔린다</b>. 판단 기록은 기존 spool 구조에 자동 적재되므로 그대로 검증 데이터가 된다.</p></div>
+<div class="card hl"><h4 style="margin-top:0">② pi 하네스에는 공식 확장 pi-jev가 이미 존재한다</h4>
+<p><code>@alexlikevibe/pi-jev</code>가 pi coding agent의 컨텍스트 압축, 모델 라우팅, <code>/jev</code> 설정 메뉴를 전부 제공한다. 설치 즉시 동작하는 최중요 레퍼런스 구현이다 (SECTION 04).</p></div>
+<div class="card hl"><h4 style="margin-top:0">③ Orca 스킬 공유가 원격 배포의 공식 통로다</h4>
+<p>Orca는 스킬 번들을 불투명 링크로 게시하면 <b>버전 고정, 롤백, 대상 머신 선택(로컬/paired runtimes/SSH hosts)</b>을 공식 계약으로 보장한다. 수신 머신이 자기 홈 경로를 스스로 해석하므로 머신 간 경로 불일치가 발생하지 않는다. 다른 컴퓨터의 Orca로의 배포는 이 통로가 정답이다.</p></div>
+</section>
+
+<section id="s3"><div class="secnum">SECTION 03</div><h2>하네스 유형별 Jev 통합 경로</h2>
+<p class="lead">하네스를 3유형으로 나누면 통합 방식이 명확해진다. 아래 패키지명과 수치는 노트북 지식창고 소스의 기록이며, 적용 시 각 프로젝트의 커밋 고정 링크로 2차 검증을 권장한다.</p>
+<div class="grid3">
+<div class="card"><span class="tag t1">유형 A</span><h4 style="margin-top:8px">코딩 CLI<br>(Claude Code, Codex, Gemini, OpenCode, pi)</h4>
+<p style="font-size:13.5px">터미널에서 셸을 직접 실행하므로 결합점은 <b>실행 직전 가드레일 + 원문 보존 압축 + 모델 라우팅</b>. MCP 서버 등록과 스킬/훅 결합이 표준 경로다.</p>
+<pre style="font-size:11.5px"><code>claude mcp add jev -- npx -y @jkudish/jev-mcp
+# Codex: config.toml [mcp_servers.jev]
+# Gemini: settings.json / mcp_config.json
+# OpenCode: opencode.json mcp 객체</code></pre></div>
+<div class="card"><span class="tag t2">유형 B</span><h4 style="margin-top:8px">MCP 지원 데몬<br>(OpenClaw)</h4>
+<p style="font-size:13.5px">24시간 자율 수집 데몬. QMD 로컬검색 파이프라인 <b>전후단에 Jev 스크리닝</b>(jev_screen, jev_find, jev_verify)을 붙여 대형 LLM 호출 전 컨텍스트 오염과 프롬프트 주입을 차단한다. 지식창고 기준 스크리닝 비용 $0.042/1M tokens.</p></div>
+<div class="card"><span class="tag t3">유형 C</span><h4 style="margin-top:8px">커스텀 오케스트레이터<br>(claude-flow, OMC)</h4>
+<p style="font-size:13.5px">SDK(TypeSafeClient, @typesafe-ai/sdk)를 라우팅 미들웨어에 직결. 서브에이전트 분기 판단을 Jev Choice/Score로 처리해 <b>70~300ms 지연</b>과 오케스트레이션 비용 절감을 노린다.</p></div>
+</div></section>
+
+<section id="s4"><div class="secnum">SECTION 04</div><h2>pi-jev: 가장 완성된 레퍼런스 구현</h2>
+<p class="lead">pi coding agent 전용 확장 <code>@alexlikevibe/pi-jev</code>는 "Jev를 하네스에 붙인다"의 모범 답안이다. 다른 하네스 셋업 설계의 기준점으로 삼는다.</p>
+<div class="grid2">
+<div class="card"><h4 style="margin-top:0">3가지 기능</h4>
+<table>
+<tr><td><b>Selective Compaction</b></td><td>session_before_compact 훅에서 Jev 판단(keep/noul/score)으로 무효 툴 결과만 축소, 원문 보존</td></tr>
+<tr><td><b>Model Routing</b></td><td>before_agent_start 훅에서 난이도 평가, cheap/strong 모델 자동 전환 (70~200ms)</td></tr>
+<tr><td><b>/jev 메뉴</b></td><td>프로바이더·임계값·라우팅 모델 실시간 설정</td></tr></table></div>
+<div class="card"><h4 style="margin-top:0">셋업</h4>
+<pre style="font-size:11.5px"><code>export TYPESAFE_API_KEY=...
+pi install npm:@alexlikevibe/pi-jev
+pi config
+pi        # 실행 중이면 /reload 후 /jev</code></pre>
+<p style="font-size:13px">설정 우선순위: 환경변수 &gt; 프로젝트 <code>.pi/jev.json</code> &gt; 글로벌 <code>~/.pi/agent/jev.json</code> &gt; 기본값</p></div>
+</div>
+<div class="card"><h4 style="margin-top:0">핵심 임계값 (조정 가능)</h4>
+<table><tr><th>파라미터</th><th>기본값</th><th>의미</th></tr>
+<tr><td><code>keepThreshold</code></td><td>0.5</td><td>툴 출력을 유지하는 최소 Jev 점수</td></tr>
+<tr><td><code>borderline</code></td><td>0.1</td><td>보존 경계선 마진</td></tr>
+<tr><td><code>truncateHeadChars</code></td><td>300</td><td>축소 시 앞부분 보존 문자 수</td></tr>
+<tr><td><code>minReduction</code></td><td>0.15</td><td>15% 미만 감축이면 기본 요약기로 폴백</td></tr>
+<tr><td><code>maxStateTokens / maxRequestTokens</code></td><td>25000 / 30000</td><td>상태·요청 토큰 상한</td></tr></table></div>
+</section>
+
+<section id="s5"><div class="secnum">SECTION 05</div><h2>하네스 무관 공통 필수 원칙 3가지</h2>
+<p class="lead">어떤 하네스에 붙이든 이 3가지를 어기면 Jev 연동은 실패한다. 모든 셋업의 검증 기준이다.</p>
+<div class="grid3">
+<div class="card"><h4 style="margin-top:0;color:var(--acc)">① 닫힌 스키마</h4><p style="font-size:13.5px">Jev는 Noul(확률)·Choice(최대 255 옵션)·Score(루브릭)로만 응답한다. 산술·날짜 비교는 못 하므로 결정론적 코드가 사전 계산해 State로 넘긴다. Choice에는 반드시 <code>other</code>/<code>needs_review</code> 예외 옵션을 둔다.</p></div>
+<div class="card"><h4 style="margin-top:0;color:var(--acc2)">② 중립적 후보 프레젠테이션</h4><p style="font-size:13.5px">State에는 관측 사실만 담는다. "이건 안전함" 같은 결론형 문구가 들어가면 Jev 판단이 흔들린다(자기확증 편향·프롬프트 주입). 유저 입력과 툴 로그는 중립화 후 전달.</p></div>
+<div class="card"><h4 style="margin-top:0;color:var(--warn)">③ 신뢰도 게이트 + 페일세이프</h4><p style="font-size:13.5px">p &ge; 0.85~0.90이면 자동 실행, 중간 밴드(0.5~0.85)는 사람 승인(ASK) 또는 상위 LLM 에스컬레이션. 장애 시 가드레일은 <b>Fail-Closed</b>(차단), 라우팅은 <b>Fail-Open</b>(기존 동작)으로 폴백.</p></div>
+</div></section>
+<section id="s6"><div class="secnum">SECTION 06</div><h2>다른 컴퓨터의 Orca로 배포하기</h2>
+<p class="lead">현지 머신에서 완성한 Jev 워크플로우는 3가지 채널로 원격 Orca에 배포할 수 있다. Orca의 공식 문서와 로컬 실측에 근거한 비교다.</p>
+<table>
+<tr><th>채널</th><th>방식</th><th>장점</th><th>판정</th></tr>
+<tr><td><b>A. Orca 스킬 공유</b></td><td>스킬 번들을 불투명 링크로 게시, 원격에서 Install from link</td><td>버전 고정(immutable) + 히스토리 롤백 + 대상 머신 선택(로컬/paired/SSH) 공식 보장, 머신별 경로 자기 해석</td><td><b style="color:var(--ok)">권장 (주 채널)</b></td></tr>
+<tr><td><b>B. SSH + 설정 직접 배포</b></td><td>agent-hooks 사용자 훅과 설정 파일을 SSH로 배치</td><td>세밀한 제어, 훅(결정점) 배포에 필수</td><td>보조 (A와 병용)</td></tr>
+<tr><td><b>C. Orca Web 원격 조작</b></td><td>6768 포트 웹 UI로 원격 Orca 접속, 수동 적용</td><td>즉시 가능, 초기 확인용</td><td>긴급·예외용</td></tr></table>
+<div class="callout"><b>배포 패키지 설계 (Jev 워크플로우 v1).</b> 스킬 4종(jev-gate 게이트, jev-compaction/jev-routing, jev-doctor 진단, jev-smoke 테스트) + agent-hooks 사용자 훅 2종(PreToolUse 결정 병합, Stop 턴 요약) + 머신별 오버라이드용 설정 매니페스트(JSON)로 구성한다. 스킬=지식, 훅=결정점으로 역할을 나눠 배포한다.</div>
+<div class="callout warn"><b>보안 메모.</b> Orca Web(6768)이 전면 바인딩(0.0.0.0) 상태다. 원격 접속에 쓰이지만 방화벽 정리와 relay 사용 여부 결정이 배포 전 과제다. orcad 자체는 기본 127.0.0.1 바인딩을 유지하는 것이 안전하다.</div>
+</section>
+
+<section id="s7"><div class="secnum">SECTION 07</div><h2>실행 전 다각도 검증: L1~L4 게이트</h2>
+<p class="lead">"다른 컴퓨터에 최적화되어 들어가는지"를 보장하는 4겹의 관문. 하나라도 FAIL이면 다음 단계로 진행하지 않는다.</p>
+<div class="grid2">
+<div class="card"><h4 style="margin-top:0"><span class="tag t1">L1</span> 환경 프리플이트 (jev-doctor)</h4>
+<p style="font-size:13.5px">대상 머신 자동 점검: OS·아키텍처, 하네스 CLI 버전, TYPESAFE_API_KEY 도달성과 지연시간, Ollama 상태, 디스크, 훅 디렉토리 쓰기 권한, quarantine 속성(샌드박스 환경 특유), 훅 백업 존재.</p></div>
+<div class="card"><h4 style="margin-top:0"><span class="tag t2">L2</span> 결정 품질 캘리브레이션 (shadow)</h4>
+<p style="font-size:13.5px">Jev 게이트를 3~7일 기록 전용으로 운영: 실행은 기존대로, 판단만 적재. 사람 승인과의 일치율, 오탐·미탐 샘플로 임계값(high 0.85~0.90, keepThreshold 등)을 튜닝. 오분류 데이터는 Jev 노트북에 재적재해 패턴 연구.</p></div>
+<div class="card"><h4 style="margin-top:0"><span class="tag t3">L3</span> 통합 스모크 (jev-smoke)</h4>
+<p style="font-size:13.5px">하네스별 표준 시나리오 자동 실행: 파괴적 명령은 deny, 평범한 ls는 allow, 애매한 명령은 ask 기대값 검증. 라우팅(cheap/strong 선택)과 원문 보존 압축도 시나리오화.</p></div>
+<div class="card"><h4 style="margin-top:0"><span class="tag t1">L4</span> 롤백 준비</h4>
+<p style="font-size:13.5px">스킬 버전 고정 설치(히스토리 즉시 롤백), 훅 원본 .bak 보존(원복 1줄), Fail 모드 테스트: 가드레일은 Fail-Closed, 라우팅은 Fail-Open이 의도대로 작동하는지 확인.</p></div>
+</div></section>
+
+<section id="s8"><div class="secnum">SECTION 08</div><h2>단계별 롤아웃 플랜</h2>
+<p class="lead">현지 머신 완성 후 원격 머신들로 확대하는 순서다.</p>
+<div class="card">
+<table>
+<tr><th style="width:90px">단계</th><th>내용</th><th>완료 기준</th></tr>
+<tr><td><b>Stage 0</b><br>현지 완성</td><td>현지 머신 전 하네스 셋업, shadow 3일, 스모크 통과</td><td>L1~L4 전부 통과</td></tr>
+<tr><td><b>Stage 1</b><br>배포 준비</td><td>스킬 번들 v1 게시(digest 기록), 대상 머신 목록화, 원격 L1 doctor 실행</td><td>번역 없는 동일 번들 + 머신별 L1 통과</td></tr>
+<tr><td><b>Stage 2</b><br>카나리</td><td>환경이 가장 유사한 원격 1대에 설치, shadow 3일 관찰</td><td>오분류 리포트 기준 허용치 이내</td></tr>
+<tr><td><b>Stage 3</b><br>확대</td><td>카나리에서 튜닝한 v1.1 게시, 나머지 머신 순차 설치</td><td>머신별 L1 통과 + 스모크 통과</td></tr>
+<tr><td><b>Stage 4</b><br>상시</td><td>주간 doctor + 월간 캘리브레이션, 오분류 샘플 노트북 재적재</td><td>지식 순환 유지</td></tr></table></div></section>
+
+<section id="s9"><div class="secnum">SECTION 09</div><h2>실행 전 확정 과제</h2>
+<div class="card">
+<table>
+<tr><th>과제</th><th>내용</th></tr>
+<tr><td><b>TYPESAFE_API_KEY</b></td><td>발급 경로와 과금 확인. 지식창고 기준이며 계정 보유 여부는 미확인</td></tr>
+<tr><td><b>Ollama 폴백 모델</b></td><td>로컬 소형 모델을 Jev 장애 시 폴백으로 쓸지 결정 (현재 모델 0개)</td></tr>
+<tr><td><b>원격 머신 분포</b></td><td>OS·아키텍처 확인(Windows/WSL이면 doctor 분기 추가)</td></tr>
+<tr><td><b>6768 포트 정책</b></td><td>전면 바인딩 상태. relay 사용 여부에 따른 방화벽 정리</td></tr>
+<tr><td><b>MCP 패키지 2차 검증</b></td><td>@jkudish/jev-mcp 등의 실재성·라이선스를 커밋 고정 링크로 확인</td></tr></table></div>
+
+<div class="card hl"><h4 style="margin-top:0">지식 순환 구조 (이 연구의 본체)</h4>
+<p style="font-size:14px">지식창고 332개 프로젝트 → 하네스 통합 연구(본 문서) → Jev 노트북 소스 재적재 → 노트북 내 브리핑 리포트 증류 → 실행하며 수집된 캘리브레이션 데이터를 다시 노트북에 적재 → 다음 버전 v1.1 연구. 연구-실행-증류가 한 루프로 돈다.</p></div>
+</section>
+
+<div class="foot"><div class="wrap">
+<p><b>출처 계층</b>: 하네스·포트·훅 구조 = 로컬 실측(2026-09-21) | Orca 동작 = 공식 문서(docs/reference: skill sharing, orcad operations) | 패키지명·수치 = Jev 노트북 지식창고 소스 기록(커밋 고정 링크로 2차 검증 권장)</p>
+<p>아카이브: ~/.aside/u/0/reports/2026-09-21_jev-하네스-셋업-연구/ | 연구문서 01·02 + 본 리포트 | Jev 노트북 소스: JEV하네스연구 01·02</p>
+<div class="gate">윤문 게이트: 경로 light, em-dash 0, 법령 검증 해당없음, KB 수치 원문 보존</div>
+</div></div>
+<script>
+window.__chartErrs = [];
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    var ctx = document.getElementById('ch1');
+    if (ctx && window.Chart) {
+      var labels = ['SDK & Decision Frameworks','Evaluation & Observability','High-Frequency & Simulation','Browser & OS Action','Routing & Cost Optimization','Security & Guardrails','Domain & Vertical Tools','Context GC & Filter','MCP & Integrations','CLI & Pipelines','Data & Search','Codebase & Graph','Decision Tools','Creative Tools','SDK Integrations','Voice & Conversation','Classification'];
+      var values = [59,29,28,26,26,23,22,20,18,18,17,11,12,11,6,4,2];
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{ data: values, backgroundColor: 'rgba(94,234,212,.55)', borderColor: '#5eead4', borderWidth: 1.2, borderRadius: 5 }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function (c) { return c.parsed.x + ' projects'; } } }
+          },
+          scales: {
+            x: { grid: { color: '#2a3646' }, ticks: { color: '#6e7f92' } },
+            y: { grid: { display: false }, ticks: { color: '#9fb0c3', font: { size: 11 } } }
+          }
+        }
+      });
+      window.__chartsAlive = 'ok';
+    } else {
+      window.__chartsAlive = 'none';
+    }
+  } catch (e) {
+    window.__chartErrs.push(String(e));
+  }
+});
+</script>
+
